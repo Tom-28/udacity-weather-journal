@@ -1,33 +1,44 @@
-// Server side code 
+// object as endpoint for all routes
+projectData = {};
 
-// Global Variables 
-const servePort = 8000;
-let projectData = {};
+// requiringxpress to run server and routes
+const express = require('express')
+const app = express()
 
-// set up required modules: express, body-parser, cors
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
+//configuring express to use body-parser as middle-ware.
+const bodyParser = require('body-parser')
 
-const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+// cors for cross origin allowance
+const cors = require('cors');
 app.use(cors());
 
-// set up server
+// initialize website as the main project folder
 app.use(express.static('website'));
 
-const server = app.listen(servePort, _ => {
-    console.log(`Running on:${servePort}`);
+// setup Server
+const port = 8000;
+const server = app.listen(port, listening);
+
+// confirm server is running
+function listening() {
+	console.log(`running on localhost: ${port}`)
+};
+
+//GET route
+app.get('/all', function (req, res) {
+	res.send(projectData);
 });
 
-// set up post and get methods
-app.get('/getData', (req, res) => {
-    console.log(`Sending data: `, projectData);
-    res.send(projectData);
-});
-
-app.post('/saveData', async (req, res) => {
-    projectData = req.body;
-    console.log(`Saved data: `, projectData);
-});
+// POST route
+app.post('/add', (req, res) => {
+	console.log(req.body);
+	newData = {
+		temperature: req.body.temp,
+		date: req.body.date,
+		content: req.body.newResponse
+	}
+	Object.assign(projectData, newData);
+})
