@@ -38,3 +38,38 @@ const postData = async (url = '', data = {}) => {
 	// appropriately handle the error
     }; 
 };
+
+// Event listener for the generate button
+document.getElementById('generate').addEventListener('click', ev => {
+    const zip = document.getElementById('zip').value;
+    const feelings = document.getElementById('feelings').value;
+    
+    getWeather(apiUrl, zip, apiKey)
+        .then(data => {
+            postData('/saveData',
+		     {zip: zip, userFeelings: feelings,
+                      temperature: data.main.temp, date: newDate})
+	})
+        .then(res => updateUi()) // Apparently the res arg is needed
+				 // for requests to happen in right order.11
+	.catch(error => console.log(`error: ${error}`));   
+});
+
+
+// Helper function to update UI
+const uiUpdateHelper = (id, data) =>{
+    document.getElementById(id).innerHTML = data;
+}
+
+// Update UI function
+const updateUi = async () => {
+    const resp = await fetch('/getData');
+    try {
+        const savedData = await resp.json();
+        uiUpdateHelper('date', savedData.date);
+        uiUpdateHelper('temp', savedData.temperature);
+        uiUpdateHelper('content', savedData.userFeelings);
+    } catch (error) {
+        presentErr(`Failed to update UI: ${error}`);
+    }
+};
