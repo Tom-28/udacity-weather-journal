@@ -1,75 +1,71 @@
-// Client side code
-
-// Global Variables - set up the OpenWeather API
-const apiKey = '12519067d9a80da46f35d8e349bf4cab';
-const apiUrl = (zip, apiKey) =>
-      'https://api.openweathermap.org/data/2.5/weather' +
-      `?zip=${zip},us&units=imperial&appid=${apiKey}`;
-
-// Create a new date instance dynamically with JS
+// creating a date
 let d = new Date();
-let newDate = d.getMonth()+'.'+ d.getDate()+'.'+ d.getFullYear();
+let month = d.getMonth() + 1;
+let newDate = d.getDate()+'.'+ month + '.'+ d.getFullYear();
 
-// GET method to query weather
-const getWeather = async (owmUrl, zip, apiKey) => {
-    const apiResponse = await fetch(owmUrl(zip, apiKey));
-    try {
-        const weather = await apiResponse.json();
-        return weather;
-    } catch (error) { console.log(`Failed to get weather: ${error}`) };
-};
+// key and url for openweather api
+let baseURL =  'http://api.openweathermap.org/data/2.5/weather?units=imperial&zip='
+const apiKey = '&APPID=bd13cd89e2841acdbab6011ea4942ce9'
 
-// POST method to backend server
-const postData = async (url = '', data = {}) => {
-    try {
-	const response = await fetch(url, {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: {
-		'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-	});
-        const newData = await response.json();
-        console.log(newData);
-        return newData
-    } catch(error) {
-	console.log("the error is", error);
-	// appropriately handle the error
-    }; 
-};
+// setting event listener to generate btn
+document.getElementById('generate').addEventListener('click', performAction);
 
-// Event listener for the generate button
-document.getElementById('generate').addEventListener('click', ev => {
-    const zip = document.getElementById('zip').value;
-    const feelings = document.getElementById('feelings').value;
-    
-    getWeather(apiUrl, zip, apiKey)
-        .then(data => {
-            postData('/saveData',
-		     {zip: zip, userFeelings: feelings,
-                      temperature: data.main.temp, date: newDate})
+// callback function for event listener
+function performAction(e) {
+	const newZip = document.getElementById('zip').value;
+	const newResponse = document.getElementById('feelings').value;
+	
+	getWeather(baseURL, newZip, apiKey)
+
+	.then(function(data) {
+		console.log(data)
+		postData('/add', {date:newDate, temp:data.main.temp, newResponse})
 	})
-        .then(res => updateUi()) // Apparently the res arg is needed
-				 // for requests to happen in right order.11
-	.catch(error => console.log(`error: ${error}`));   
-});
+	.then(setTimeout(function() {
+		updateUI();
+		}, 700));
+};
 
-
-// Helper function to update UI
-const uiUpdateHelper = (id, data) =>{
-    document.getElementById(id).innerHTML = data;
+// get data from web api
+const getWeather = async (baseURL, newZip, apiKey)=>{
+  const res = await fetch(baseURL+newZip+apiKey)
+  try {
+    const data = await res.json();
+    return data;
+  }catch(error) {
+    console.log("error", error);
+  }
 }
 
-// Update UI function
-const updateUi = async () => {
-    const resp = await fetch('/getData');
-    try {
-        const savedData = await resp.json();
-        uiUpdateHelper('date', savedData.date);
-        uiUpdateHelper('temp', savedData.temperature);
-        uiUpdateHelper('content', savedData.userFeelings);
-    } catch (error) {
-        presentErr(`Failed to update UI: ${error}`);
-    }
-};
+// post data to server
+const postData = async (url = '', data = {})=> {
+	const response = await fetch(url, {
+		method: 'POST',
+		mode: 'cors',
+		credentials: 'same-origin',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify(data),	
+		});
+	try {
+		const newData = await response.json();
+		console.log(newData);
+	}catch(error) {
+		console.log("error", error);
+	}
+}
+
+// update UI
+const updateUI = async () => {
+	const request = await fetch('/all')
+	try{
+		const allData = await request.json();
+		console.log(allData);
+		document.getElementById('date').innerHTML = allData.date;
+		document.getElementById('temp').innerHTML = allData.temperature;
+		document.getElementById('content').innerHTML = allData.content;
+	}catch(error) {
+		console.log("error", error);
+	}
+}
