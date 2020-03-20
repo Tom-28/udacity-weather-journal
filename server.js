@@ -18,5 +18,16 @@ app.use(cors());
 app.use(express.static('website'));
 
 const server = app.listen(servePort, _ => {
-    console.log(`Running on ${os.hostname().toLowerCase()}.local:${servePort}`);
+    console.log(`Running on:${servePort}`);
+});
+
+// set up post and get methods
+app.get('/getData', (req, res) => {
+    console.log(`Sending data: `, projectData);
+    res.send(projectData);
+});
+
+app.post('/saveData', async (req, res) => {
+    projectData = req.body;
+    console.log(`Saved data: `, projectData);
 });
