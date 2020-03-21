@@ -40,5 +40,8 @@ app.post('/add', (req, res) => {
 		date: req.body.date,
 		content: req.body.newResponse
 	}
-	Object.assign(projectData, newData);
+	projectData = newData;
+	res.send(newData);
+	/*actually not needed to send back the data since 
+	the updateUI function makes a get request by its own*/
 })
