@@ -15,13 +15,20 @@ function performAction(e) {
 	const newZip = document.getElementById('zip').value;
 	const newResponse = document.getElementById('feelings').value;
 	
-	getWeather(baseURL, newZip, apiKey)
-	.then(function(data) {
-		postData('/add', {date:newDate, temp:data.main.temp, newResponse})
-	})
-	.then(setTimeout(function() {
-		updateUI();
-		}, 700));
+	if (newZip.length < 5) {
+		alert("Please enter a correct Zipcode")
+	} else {
+		getWeather(baseURL, newZip, apiKey)
+		.then(function(data) {
+			postData('/add', {date:newDate, temp:data.main.temp, newResponse})
+		})
+		// .then(function(res){
+		// 	updateUI();
+		// })
+		.then(setTimeout(function() {
+			updateUI();
+			}, 700));
+	}
 };
 
 // get data from web api
